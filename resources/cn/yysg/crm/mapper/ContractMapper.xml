@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.ContractMapper">
+	<resultMap type="Contract" id="ContractMap">
+		<id column="id" property="id" />
+		<result column="sn" property="sn" />
+		<result column="signTime" property="signTime" />
+		<result column="sum" property="sum" />
+		<result column="intro" property="intro" />
+		<association property="customer" column="customer_id" javaType="Customer">
+			<id property="id" column="mid"/>
+			<result column="name" property="name"/>
+			<result column="age" property="age"/>
+			<result column="gender" property="gender"/>
+			<result column="mtel" property="tel"/>
+			<result column="memail" property="email"/>
+			<result column="qq" property="qq"/>
+			<result column="minputTime" property="inputTime"/>
+			<result column="wechat" property="wechat"/>
+			<result column="inputUser_id" property="inputUser"/>
+			<result column="seller_id" property="seller"/>
+			<result column="job_id" property="job_id"/>
+			<result column="salaryLevel_id" property="salaryLevel"/>
+			<result column="source_id" property="source"/>
+			<result column="mstate" property="state"/>
+		</association>
+		<association property="seller" javaType="Employee">
+			<id column="eid" property="id" />
+			<result column="username" property="username" />
+			<result column="realName" property="realName" />
+			<result column="password" property="password" />
+			<result column="etel" property="tel" />
+			<result column="eemail" property="email" />
+			<result column="einputTime" property="inputTime" />
+			<result column="state" property="estate" />
+			<result column="department_id" property="department" />
+		</association>
+	</resultMap>
+	<!-- 保存 -->
+	<insert id="save" parameterType="Contract" useGeneratedKeys="true"
+		keyProperty="id">
+		insert into t_contract (sn,customer_id,signTime,seller_id,sum,intro)
+		values(#{sn},#{customer.id},#{signTime},#{seller.id},#{sum},#{intro})
+	</insert>
+
+	<!-- 修改 -->
+	<update id="update" parameterType="Contract">
+		update t_contract set
+		sn=#{sn},customer_id=#{customer.id},signTime=#{signTime},seller_id=#{seller.id},sum=#{sum},intro=#{intro}
+		where id=#{id}
+	</update>
+
+	<!-- 删除 -->
+	<delete id="delete" parameterType="long">
+		delete from t_contract
+		where
+		id=#{id}
+	</delete>
+
+	<!-- 通过id获取 -->
+	<select id="get" resultType="Contract" parameterType="long">
+		select
+		id,sn,customer_id,signTime,seller_id,sum,intro from t_contract where
+		id=#{id}
+	</select>
+
+	<!-- 通过所有 -->
+	<select id="getAll" resultType="Contract">
+		select
+		* from t_contract
+	</select>
+	
+	<sql id="whereSql" >
+		<where>
+			<if test="keyWord!=null">
+			 	and c.sn=#{keyWord}
+			</if>
+		</where>
+	</sql>
+	
+	<!-- 分页  总数据条数-->
+	<select id="getTotal" resultType="int" parameterType="ContractQuery" >
+		select count(*) from t_contract c<include refid="whereSql"/>
+	</select>
+	<!-- 分页数据 -->
+	<select id="getRows" resultMap="ContractMap" parameterType="ContractQuery" >
+		select c.id,c.sn,c.signTime,c.sum,c.intro,e.id eid,e.username,e.realName,e.password,e.tel etel,e.email eemail,e.inputTime einputTime,e.state estate,e.department_id,m.id mid,m.name,m.age,m.gender,m.tel mtel,m.email memail,m.qq,m.inputTime minputTime,m.wechat,m.inputUser_id,m.seller_id,m.job_id,m.salaryLevel_id,m.source_id,m.state mstate from t_contract c
+		LEFT JOIN t_employee e on c.seller_id=e.id
+		LEFT JOIN t_customer m on c.customer_id=m.id
+		<include refid="whereSql"/> 
+		limit #{begin},#{end}
+		
+		<!-- select o.* from t_contract o
+		LEFT JOIN t_employee e on o.seller_id=e.id
+		LEFT JOIN t_customer c on o.customer_id=c.id
+		<include refid="whereSql"/> 
+		limit #{begin},#{end} -->
+	</select>
+	
+</mapper>

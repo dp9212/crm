@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.PermissionMapper">
+
+	<!-- 保存 -->
+	<insert id="save" parameterType="Permission" useGeneratedKeys="true" keyProperty="id">
+		insert into t_permission (name,resource,state) values(#{name},#{resource},#{state})
+	</insert>
+
+	<!-- 修改 -->
+	<update id="update" parameterType="Permission">
+		update t_permission set resource=#{resource},name=#{name},state=#{state} 
+		where id=#{id}
+	</update>
+
+	<!-- 删除 -->
+	<delete id="delete" parameterType="long">
+		delete from t_permission
+		where id=#{id}
+	</delete>
+
+	<!-- 通过id获取 -->
+	<select id="get" resultType="Permission" parameterType="long">
+		select * from t_permission where id=#{id}
+	</select>
+	<!-- 通过name获取获取权限 -->
+	<select id="findByName" resultType="Permission" parameterType="string">
+		select * from t_permission where name=#{name}
+	</select>
+
+	<!-- 获取所有 -->
+	<select id="getAll" resultType="Permission">
+		select * from t_permission
+	</select>
+	
+	<sql id="whereSql">
+		<where>
+			<if test="roleId!=null">
+				and EXISTS (select 1 from t_role_permission where role_id=#{roleId} and permission_id=e.id)
+			</if>
+			<if test="state!=null">
+				and e.state=#{state}
+			</if>
+		</where>
+	</sql>
+	
+	<!-- 按条件查询对象 总数-->
+	<select id="getTotal" resultType="int" parameterType="BaseQuery">
+		select count(1) from t_permission e   
+		<include refid="whereSql"/> 
+	</select>
+	
+	<!-- 查询结果映射 -->
+	<resultMap type="Permission" id="PermissionMap">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="resource" column="resource" />
+		<result property="state" column="state" />
+	</resultMap>
+	
+	<!-- 按条件查询对象 记录-->
+	<select id="getRows" resultMap="PermissionMap" parameterType="BaseQuery">
+		select e.* from t_permission e   
+		<include refid="whereSql"/> 
+		limit #{begin},#{end}
+	</select>
+</mapper>

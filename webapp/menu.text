@@ -1,0 +1,82 @@
+﻿[{
+	"id":1,
+	"text":"组织机构",
+	"children":[{
+		"id":13,
+		"text":"部门管理",
+		"url":"/department/list"
+	},{
+		"id":14,
+		"text":"员工管理",
+		"url":"/employee/list"
+	},{
+		"id":16,
+		"text":"潜在客户",
+		"url":"/potentialCustomer/list"
+	}]
+},{
+	"id":1,
+	"text":"系统管理",
+	"children":[{
+		"id":13,
+		"text":"权限管理",
+		"url":"/permission/list"
+	},{
+		"id":14,
+		"text":"菜单管理",
+		"url":"/menu/list"
+	},{
+		"id":15,
+		"text":"角色管理",
+		"url":"/role/list"
+	},{
+		"id":16,
+		"text":"数据字典",
+		"url":"/systemDictionary/list"
+	}]
+},{
+	"id":1,
+	"text":"订单合同管理",
+	"children":[{
+		"id":13,
+		"text":"保修单",
+		"url":"/guarantee/list"
+
+        },{
+		"id":14,
+		"text":"保修订单",
+		"url":"/guaranteeItem/list"
+	},{
+		"id":15,
+		"text":"订单管理",
+		"url":"/order/list"
+	},{
+		"id":16,
+		"text":"合同管理",
+		"url":"/contract/list"
+	},{
+		"id":16,
+		"text":"合同付款明细",
+		"url":"/contractitem/list"
+	}]
+},{
+	"id":1,
+	"text":"客户管理",
+	"children":[{
+		"id":13,
+		"text":"客户信息",
+		"url":"/customer/list"
+	},{
+		"id":14,
+		"text":"跟进历史",
+		"url":"/customerTraceHistory/list"
+	},{
+		"id":15,
+		"text":"移交记录",
+		"url":"/customerTransfer/list"
+	}]
+},{
+	"id":1,
+	"text":"系统日志",
+	"url":"/systemLog/list"
+}]

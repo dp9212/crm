@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.DepartmentMapper">
+	<!-- 员工界面部门下拉单 -->
+	<resultMap id="DeptMap" type="Department">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<association column="manager_id" property="manager" javaType="Employee" >
+			<id column="manager_id" property="id" />
+			<result column="realName" property="realName" />
+		</association>
+	</resultMap>
+	<!-- 员工添加编辑时部门下拉单 -->
+	<!-- <select id="getDept" resultType="Department">
+		select id,name from t_department
+	</select> -->
+	<select id="getDept" resultMap="DeptMap" parameterType="DepartmentQuery">
+		select d.id,d.name,d.manager_id,o.realName from t_department d 
+		left join t_employee o on d.manager_id=o.id
+	</select>
+
+	<!-- 保存 -->
+	<insert id="save" parameterType="Department" useGeneratedKeys="true"
+		keyProperty="id">
+		insert into t_department
+		(name,sn,dirPath,manager_id,parent_id)
+		values(#{name},#{sn},#{dirPath},#{manager.id},#{parent.id})
+	</insert>
+
+	<!-- 修改 -->
+	<update id="update" parameterType="Department">
+		update t_department set
+		name=#{name},
+		<if test="sn!=null">
+		sn=#{sn},
+		</if>
+		<if test="dirPath!=null">
+		dirPath=#{dirPath},
+		</if>
+		manager_id=#{manager.id},parent_id=#{parent.id}
+		where id=#{id}
+	</update>
+
+	<!-- 删除 -->
+	<delete id="delete" parameterType="long">
+		delete from t_department
+		where
+		id=#{id}
+	</delete>
+
+	<!-- 通过id获取 -->
+	<select id="get" resultType="Department" parameterType="long">
+		select
+		id,name,sn,dirPath,manager_id,parent_id from t_department where
+		id=#{id}
+	</select>
+
+	<!-- 通过所有 -->
+	<select id="getAll" resultType="Department">
+		select
+		id,name,sn,dirPath,manager_id,parent_id from t_department
+	</select>
+
+<sql id="whereSql">
+	<where>
+		<!-- 基础查询 -->
+		<if test="keyWord!=null and keyWord!=''">
+			and (d.name like concat('%',#{keyWord},'%') or d.sn like concat('%',#{keyWord},'%'))
+		</if>
+		<!-- 高级查询 -->
+		<if test="name!=null and name!=''">
+			and d.name like concat('%',#{name},'%')
+		</if>
+		<if test="sn!=null and sn!=''">
+			and d.name like concat('%',#{sn},'%')
+		</if>
+		<if test="managerId!=null">
+			and d.manager_id = #{managerId}
+		</if>
+		<if test="parentId!=null">
+			and d.parent_id = #{parentId}
+		</if>
+		
+	</where>
+</sql>
+	<!-- 查找符合查询条件的记录总数 -->
+	<select id="getTotal" resultType="int" parameterType="BaseQuery">
+		select count(*) from t_department d 
+		<include refid="whereSql" />
+	</select>
+
+	<!-- 映射部门经理和上级部门 -->
+	<resultMap type="Department" id="DepartmentMap">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+		<result property="sn" column="sn"/> 
+		<result property="dirPath" column="dirPath"/>
+		<!-- 关联映射部门经理 -->
+		<association property="manager" column="manager_id" javaType="Employee">
+			<id column="manager_id" property="id" />
+			<result column="realName" property="realName"/>
+		</association>
+		<!-- 关联映射上级部门 -->
+		<association property="parent" column="parent_id" javaType="Department">
+			<id column="parent_id" property="id" />
+			<result column="pname" property="name"/>
+		</association>
+		
+	</resultMap>
+
+	<!-- 查找符合查询条件的记录列表 -->
+	<select id="getRows" resultMap="DepartmentMap" parameterType="BaseQuery">
+		select d.id,d.name,d.sn,d.dirPath,d.manager_id,o.realName,d.parent_id,p.`name` pname from t_department d 
+		LEFT JOIN t_department p on p.id = d.parent_id 
+		LEFT JOIN t_employee o on o.id = d.manager_id 
+		<include refid="whereSql" /> 
+		limit #{begin},#{end}
+	</select>
+	
+	
+	<!-- 映射部门树 -->
+	<resultMap type="Department" id="DepartmentTreeMap">
+		<id property="id" column="pid" />
+		<result property="name" column="pname"/>
+		<collection property="children" ofType="Department">
+			<id property="id" column="cid" />
+			<result property="name" column="cname"/>
+		</collection>
+	</resultMap>
+	
+	<!-- 查询部门层次树 -->
+	<select id="getTreeData" resultMap="DepartmentTreeMap">
+		SELECT p.id pid,p.`name` pname,c.id cid,c.`name` cname from t_department p 
+		left JOIN t_department c on p.id = c.parent_id 
+		where p.parent_id is null;
+	</select>
+
+</mapper>

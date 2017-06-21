@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.PotentialCustomerMapper">
+					
+	<!-- 保存 -->
+	<insert id="save" parameterType="PotentialCustomer" useGeneratedKeys="true" keyProperty="id">
+		insert into potentialCustomer (customerSource,name,successRate,remark,linkMan,inputUser,inputTime)
+		 values(#{customerSource},#{name},#{successRate},#{remark},#{linkMan},#{inputUser},#{inputTime})
+	</insert>
+
+	<!-- 修改 -->
+	<update id="update" parameterType="PotentialCustomer">
+		update potentialCustomer set customerSource=#{customerSource},name=#{name},successRate=#{successRate},remark=#{remark},linkMan=#{linkMan},inputUser=#{inputUser},inputTime=#{inputTime}
+		where id=#{id}
+	</update>
+
+	<!-- 删除 -->
+	<delete id="delete" parameterType="long">
+		delete from potentialCustomer
+		where
+		id=#{id}
+	</delete>
+
+	<!-- 通过id获取 -->
+	<select id="get" resultType="PotentialCustomer" parameterType="long">
+		select id,customerSource,name,successRate,remark,linkMan,inputUser,inputTime from potentialCustomer where id=#{id}
+	</select>
+
+	<!-- 通过所有 -->
+	<select id="getAll" resultType="PotentialCustomer">
+		select id,customerSource,name,successRate,remark,linkMan,inputUser,inputTime from potentialCustomer
+	</select>
+</mapper>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.GuaranteeMapper">
+
+	<!-- 通过id获取保修单 -->
+	<select id="get" resultMap="guaranteeResultMap" parameterType="long">
+		select o.id,o.sn,o.guaranteeTime,o.customer_id,o.contract_id
+		from t_guarantee o left join t_customer cm on o.customer_id=cm.id
+		left join t_contract ct on o.contract_id=ct.id
+		where o.id=#{id}
+	</select>
+	
+	<!-- 获取所有的保修单信息 -->
+	<select id="getAll" resultType="Guarantee">
+		select
+		o.id,o.sn,o.guaranteeTime,o.customer_id,o.contract_id
+		from t_guarantee
+		o left join t_customer cm on o.customer_id=cm.id
+		left join t_contract
+		ct on o.contract_id=ct.id
+	</select>
+	
+	<!-- 通过合同id来查询出该合同的保休单id-->
+	<select id="getGuaranteeIdByContract" resultType="long" parameterType="long">
+		select g.id from t_guarantee g 
+		left join t_contract c 
+		on g.contract_id=c.id where c.id=#{c.id}
+	</select>
+
+	<!-- 保存合同信息 -->
+	<insert id="save" parameterType="Guarantee" keyProperty="id"
+		useGeneratedKeys="true">
+		insert into t_guarantee 
+		(id,sn,guaranteeTime,customer_id,contract_id)
+		values 
+		(#{id},#{sn},#{guaranteeTime},#{customer.id},#{contract.id});
+	</insert>
+
+	<!-- 修改合同信息 -->
+	<update id="update" parameterType="Guarantee">
+		update t_guarantee set
+		sn=#{sn},guaranteeTime=#{guaranteeTime},customer_id=#{customer.id},
+		contract_id=#{contract.id},
+		where id=#{id}
+	</update>
+
+	<!-- 通过id删除合同 -->
+	<delete id="delete" parameterType="long">
+		delete from t_guarantee where
+		id =
+		#{id};
+	</delete>
+
+	<!-- 公共的查询条件 -->
+	<sql id="whereSql">
+		<where>
+			<if test="q!=null and q!=''">
+				and (o.sn like concat('%',#{q},'%'))
+			or (c.name like concat('%',#{q},'%')) 
+			</if>
+			<if test="beginDate != null">
+				and o.guaranteeTime >=#{beginDate}
+			</if>
+			<if test="endDate != null">
+				and o.guaranteeTime &lt;=#{endDate}
+			</if>
+		</where>
+	</sql>
+
+	<!-- 根据条件查询count -->
+	<!-- int findCountByQuery(BaseQuery baseQuery); -->
+	<select id="getTotal" resultType="int" parameterType="GuaranteeQuery">
+		select count(o.id) from t_guarantee o
+		left join t_customer c on c.id = o.customer_id
+		<include refid="whereSql" />
+	</select>
+
+	<!-- 根据条件查询limit -->
+	<!-- List<T> findLimitByQuery(BaseQuery baseQuery); -->
+	<!-- limit #{begin},#{end} 从BaseQuery获取的 -->
+	<select id="getRows" resultMap="guaranteeResultMap"
+		parameterType="GuaranteeQuery">
+		select o.*,c.name cname,p.id pid,p.sn psn from t_guarantee o
+		left join t_customer c on c.id = o.customer_id
+		left join t_contract p on o.contract_id=p.id
+		<include refid="whereSql" />
+		order by ${sort} ${order}
+		limit
+		#{begin},#{end}
+	</select>
+
+	<resultMap type="Guarantee" id="guaranteeResultMap">
+		<!-- 订单自己的属性o.id,o.sn,o.signTime,o.sum,o.intro -->
+		<id property="id" column="id" />
+		<result property="sn" column="sn" />
+		<result property="guaranteeTime" column="guaranteeTime" />
+		<!-- 关键对象：多对一，保修单客户 -->
+		<!-- c.id cid,c.name cname JOIN t_customer c on c.id=o.customer_id -->
+		<association property="customer" column="customer_id" javaType="Customer">
+			<id property="id" column="cmid" />
+			<result property="name" column="cname" />
+		</association>
+		<association property="contract" column="contract_id" javaType="Contract">
+			<id property="id" column="pid" />
+			<result property="sn" column="psn" />
+		</association>
+	</resultMap>
+
+</mapper> 

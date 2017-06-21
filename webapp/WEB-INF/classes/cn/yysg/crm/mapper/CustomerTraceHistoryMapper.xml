@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.CustomerTraceHistoryMapper">
+<sql id="wheresql">
+	<where>
+		 <if test="keyWord!=null and keyWord!=''" >
+		 	and o.remark like concat('%',#{keyWord},'%')
+		 </if>
+	</where>
+</sql>
+<resultMap type="CustomerTraceHistory" id="customerTraceHistoryMap">
+	<id property="id" column="id"/>
+	<result property="remark" column="remark" />
+	<result property="title" column="title" />
+	<result property="traceResult" column="traceResult" />
+	<result property="traceTime" column="traceTime" />
+	<association property="traceType" column="traceType_id" javaType="SystemDictionaryItem">
+		<id property="id" column="iid"/>
+		<result property="name" column="iname" />
+	</association>
+	<association property="customer" column="customer_id" javaType="Customer">
+		<id property="id" column="cid"/>
+		<result property="name" column="cname" />
+	</association>
+	<association property="traceUser" column="traceUser_id" javaType="Employee">
+		<id property="id" column="eid"/>
+		<result property="realName" column="erealName" />
+	</association>
+	
+</resultMap>
+	<select id="getAll" resultType="CustomerTraceHistory">
+		select * from t_customerTraceHistory 
+	</select>
+	<select id="save" parameterType="CustomerTraceHistory">
+		insert into t_customerTraceHistory(
+		remark,title,traceResult,traceTime
+		,traceType_id,customer_id,traceUser_id
+		) values(
+			#{remark},#{title},#{traceResult},#{traceTime}
+			,#{traceType.id},#{customer.id},#{traceUser.id}
+		)
+	
+	</select>
+	<select id="update" parameterType="CustomerTraceHistory">
+		update t_customerTraceHistory set remark=#{remark},title=#{title},
+		traceResult=#{traceResult},traceTime=#{traceTime},traceType_id=#{traceType.id},
+		customer_id=#{customer.id},traceUser_id=#{traceUser.id}
+		where id=#{id}
+	</select>
+	<select id="delete" parameterType="long">
+		delete from t_customerTraceHistory where id=#{id} 
+	</select>
+	<select id="getTotal" parameterType="CustomerTraceHistoryQuery" resultType="int">
+		select count(*) from t_customerTraceHistory o 	
+		<include refid="wheresql"/>
+	</select>
+	<select id="getRows" resultMap="customerTraceHistoryMap" parameterType="CustomerTraceHistoryQuery">
+		select o.*,c.id cid,c.`name` cname,e.id eid,e.realName erealName
+		,i.id iid,i.`name` iname
+		FROM t_customertracehistory o 
+		LEFT JOIN t_customer c on o.customer_id=c.id
+		left join t_employee e on o.traceUser_id=e.id
+		LEFT JOIN t_system_dictionary_item i on o.traceType_id=i.id
+		<include refid="wheresql"/> 
+		order by ${sort} ${order}
+		limit #{begin},#{end}
+	</select>
+	
+</mapper>

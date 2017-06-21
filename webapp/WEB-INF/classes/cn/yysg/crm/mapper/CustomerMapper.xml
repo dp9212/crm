@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.CustomerMapper">
+<sql id="wheresql">
+	<where>
+		 <if test="keyWord!=null and keyWord!=''" >
+		 	and o.name like concat('%',#{keyWord},'%') or o.address like concat('%',#{keyWord},'%')
+		 </if>
+		 <if test="name!=null and name!=''" >
+		 	and o.name like concat('%',#{name},'%')
+		 </if>
+		 <if test="gender!=null" >
+		 	and o.gender=#{gender}
+		 </if>
+		 <if test="seller_id!=null" >
+		 	and o.seller_id=#{seller_id}
+		 </if>
+		 <if test="id!=null" >
+		 	and o.id=#{id}
+		 </if>
+		 <if test="inputuser_id!=null" >
+		 	and o.inputuser_id=#{inputuser_id}
+		 </if>
+		 <if test="age!=null" >
+		 	and o.age>#{age}
+		 </if>
+	</where>
+</sql>
+
+<resultMap type="Customer" id="getOneCustomerMap">
+<id property="id" column="id"/>
+<result property="name" column="name"/>
+<result property="age" column="age"/>
+<result property="gender" column="gender"/>
+<result property="tel" column="tel"/>
+<result property="email" column="email"/>
+<result property="qq" column="qq"/>
+<result property="wechat" column="wechat"/>
+<result property="state" column="state"/>
+<result property="inputTime" column="inputTime"/>
+<result property="address" column="address"/>
+<association property="seller" column="seller_id" javaType="Employee">
+<id property="id" column="seller_id"/>
+<result property="realName" column="realName"/>
+<result property="tel" column="tel"/>
+</association>
+<association property="inputUser" column="inputuser_id" javaType="Employee">
+<id property="id" column="inputuser_id"/>
+<result property="realName" column="inputRealName"/>
+<result property="tel" column="Dtel"/>
+</association>
+
+<association property="source" column="source_id" javaType="SystemDictionaryItem">
+<id property="id" column="iiiid"/>
+<result property="name" column="iiiname"/>
+<association property="parent" column="parent_id" javaType="SystemDictionary">
+<id property="id" column="sdid"/>
+<result property="name" column="sdname"/>
+</association>
+</association>
+
+<association property="salaryLevel" column="salaryLevel_id" javaType="SystemDictionaryItem">
+<id property="id" column="iiid"/>
+<result property="name" column="iiname"/>
+<association property="parent" column="parent_id" javaType="SystemDictionary">
+<id property="id" column="sddid"/>
+<result property="name" column="sddname"/>
+</association>
+</association>
+
+<association property="job" column="job_id" javaType="SystemDictionaryItem">
+<id property="id" column="iid"/>
+<result property="name" column="iname"/>
+<association property="parent" column="parent_id" javaType="SystemDictionary">
+<id property="id" column="sdddid"/>
+<result property="name" column="sdddname"/>
+</association>
+</association>
+
+</resultMap>
+
+
+
+
+
+<resultMap type="Customer" id="customerMap">
+<id property="id" column="id"/>
+<result property="name" column="name"/>
+<result property="age" column="age"/>
+<result property="gender" column="gender"/>
+<result property="tel" column="tel"/>
+<result property="email" column="email"/>
+<result property="qq" column="qq"/>
+<result property="wechat" column="wechat"/>
+<result property="state" column="state"/>
+<result property="inputTime" column="inputTime"/>
+<result property="address" column="address"/>
+<association property="seller" column="seller_id" javaType="Employee">
+<id property="id" column="seller_id"/>
+<result property="realName" column="realName"/>
+<result property="tel" column="tel"/>
+</association>
+<association property="inputUser" column="inputuser_id" javaType="Employee">
+<id property="id" column="inputuser_id"/>
+<result property="realName" column="inputRealName"/>
+<result property="tel" column="Dtel"/>
+</association>
+
+<association property="source" column="source_id" javaType="SystemDictionaryItem">
+<id property="id" column="iiiid"/>
+<result property="name" column="iiiname"/>
+<association property="parent" column="parent_id" javaType="SystemDictionary">
+<id property="id" column="sdid"/>
+<result property="name" column="sdname"/>
+</association>
+</association>
+
+<association property="salaryLevel" column="salaryLevel_id" javaType="SystemDictionaryItem">
+<id property="id" column="iiid"/>
+<result property="name" column="iiname"/>
+<association property="parent" column="parent_id" javaType="SystemDictionary">
+<id property="id" column="sddid"/>
+<result property="name" column="sddname"/>
+</association>
+</association>
+
+<association property="job" column="job_id" javaType="SystemDictionaryItem">
+<id property="id" column="iid"/>
+<result property="name" column="iname"/>
+<association property="parent" column="parent_id" javaType="SystemDictionary">
+<id property="id" column="sdddid"/>
+<result property="name" column="sdddname"/>
+</association>
+</association>
+
+
+</resultMap>
+	<select id="getAll" resultType="Customer">
+		select * from t_customer 
+	</select>
+	<select id="save" parameterType="Customer">
+		insert into t_customer(
+		id,name,age,gender,tel,email,qq,wechat,state,address,seller_id,job_id,
+		salaryLevel_id,source_id,inputuser_id,inputTime
+		
+		) values(
+			#{id},#{name},#{age},#{gender},#{tel},#{email},#{qq},#{wechat},#{state},#{address},
+			#{seller.id},#{job.id},#{salaryLevel.id},#{source.id},#{inputUser.id},#{inputTime}
+		)
+	
+	</select>
+	<select id="update" parameterType="Customer">
+		update t_customer set name=#{name},age=#{age},
+		gender=#{gender},tel=#{tel},email=#{email},
+		qq=#{qq},wechat=#{wechat},state=#{state},address=#{address},
+		seller_id=#{seller.id},job_id=#{job.id},salaryLevel_id=#{salaryLevel.id},
+		source_id=#{source.id},
+		inputuser_id=#{inputUser.id},
+		inputTime=#{inputTime}
+		where id=#{id}
+	</select>
+	<select id="delete" parameterType="long">
+		delete from t_customer where id=#{id} 
+	</select>
+	
+	<select id="get" parameterType="long" resultMap="getOneCustomerMap">
+		select o.*,e.realName,e.department_id,e.tel,d.tel Dtel,
+		d.realName inputRealName,d.department_id inputDeptID, 
+		i.id iid,i.`name` iname,ii.id iiid,ii.`name` iiname,iii.id iiiid,iii.`name` iiiname,sd.id sdid,sd.`name` sdname,
+		sdd.id sddid,sdd.`name` sddname,sddd.id sdddid,sddd.name sdddname
+		from t_customer o 
+		LEFT JOIN t_employee e on o.seller_id=e.id
+		LEFT JOIN t_employee d on o.inputuser_id=d.id
+		left join (t_system_dictionary_item i LEFT JOIN t_system_dictionary sddd on i.parent_id=sddd.id) on i.id=o.job_id
+		left join (t_system_dictionary_item ii LEFT JOIN t_system_dictionary sdd on ii.parent_id=sdd.id) on ii.id=o.salaryLevel_id
+		left join (t_system_dictionary_item iii LEFT JOIN t_system_dictionary sd on iii.parent_id=sd.id) on iii.id=o.source_id
+		where o.id=#{id}
+	</select>
+	<select id="getTotal" parameterType="CustomerQuery" resultType="int">
+		select count(*) from t_customer o 
+		<include refid="wheresql"/>
+	</select>
+	<select id="getRows" resultMap="customerMap" parameterType="CustomerQuery">
+	select o.*,e.realName,e.department_id,e.tel,d.tel Dtel,
+d.realName inputRealName,d.department_id inputDeptID, 
+i.id iid,i.`name` iname,ii.id iiid,ii.`name` iiname,iii.id iiiid,iii.`name` iiiname,sd.id sdid,sd.`name` sdname,
+sdd.id sddid,sdd.`name` sddname,sddd.id sdddid,sddd.name sdddname
+from t_customer o 
+LEFT JOIN t_employee e on o.seller_id=e.id
+LEFT JOIN t_employee d on o.inputuser_id=d.id
+left join (t_system_dictionary_item i LEFT JOIN t_system_dictionary sddd on i.parent_id=sddd.id) on i.id=o.job_id
+left join (t_system_dictionary_item ii LEFT JOIN t_system_dictionary sdd on ii.parent_id=sdd.id) on ii.id=o.salaryLevel_id
+left join (t_system_dictionary_item iii LEFT JOIN t_system_dictionary sd on iii.parent_id=sd.id) on iii.id=o.source_id
+		<include refid="wheresql"/> 
+		order by ${sort} ${order}
+		limit #{begin},#{end}
+	</select>
+	<select id="moneyData" resultType="java.util.HashMap">
+	select i.name iname,count(*) co from t_customer  o  JOIN t_system_dictionary_item i ON o.salaryLevel_id= i.id  GROUP  BY i.name
+	</select>
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.ContractItemMapper">
+	<resultMap type="ContractItem" id="ContractItemMap">
+		<id column="id" property="id" />
+		<result column="payTime" property="payTime" />
+		<result column="money" property="money" />
+		<result column="isPayment" property="isPayment" />
+		<result column="scal" property="scal" />
+		<association property="contract" column="contract_id" javaType="Contract">
+			<id column="cid" property="id" />
+			<result column="sn" property="sn" />
+			<result column="customer_id" property="customer" />
+			<result column="seller_id" property="seller" />
+			<result column="signTime" property="signTime" />
+			<result column="sum" property="sum" />
+			<result column="intro" property="intro" />
+		</association>
+	</resultMap>
+	<!-- 保存 -->
+	<insert id="save" parameterType="ContractItem" useGeneratedKeys="true"
+		keyProperty="id">
+		insert into t_contractitem
+		(contract_id,payTime,money,isPayment,scal)
+		values(#{contract.id},#{payTime},#{money},#{isPayment},#{scal})
+	</insert>
+
+	<!-- 修改 -->
+	<update id="update" parameterType="ContractItem">
+		update t_contractitem set
+		contract_id=#{contract.id},payTime=#{payTime},money=#{money},isPayment=#{isPayment},scal=#{scal}
+		where id=#{id}
+	</update>
+
+	<!-- 删除 -->
+	<delete id="delete" parameterType="long">
+		delete from t_contractitem
+		where
+		id=#{id}
+	</delete>
+
+	<!-- 通过id获取 -->
+	<select id="get" resultType="ContractItem" parameterType="long">
+		select
+		id,contract_id,payTime,money,isPayment,scal from t_contractitem where
+		id=#{id}
+	</select>
+
+	<!-- 通过所有 -->
+	<select id="getAll" resultType="ContractItem">
+		select
+		* from t_contractitem
+	</select>
+	
+	<sql id="whereSql" >
+		<where>
+			<if test="keyWord!=null and keyWord!=''">
+			 	and i.contract_id=#{keyWord}
+			</if>
+			<!-- <if test="keyWord==null">
+				and 1!=1
+			</if> -->
+		</where>
+	</sql>
+	
+	<!-- 分页  总数据条数-->
+	<select id="getTotal" resultType="int" parameterType="ContractItemQuery" >
+		select count(*) from t_contractitem i<include refid="whereSql"/>
+	</select>
+	<!-- 分页数据 -->
+	<select id="getRows" resultMap="ContractItemMap" parameterType="ContractItemQuery" > 
+	select i.id,i.payTime,i.money,i.isPayment,i.scal,c.id cid,c.sn ,c.customer_id,c.signTime,c.seller_id,c.sum,c.intro from t_contractitem i
+	left join t_contract c on i.contract_id = c.id
+	<include refid="whereSql"/>
+	limit #{begin},#{end}
+		<!-- select e.*,o.sn osn,o.signTime osignTime,o.sum osum from t_contractitem e 
+		left join t_contract o on e.contract_id=o.id
+		<include refid="whereSql"/> 
+		limit #{begin},#{end} -->
+	</select>
+	
+</mapper>

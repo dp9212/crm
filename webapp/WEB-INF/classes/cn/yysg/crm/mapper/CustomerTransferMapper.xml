@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.CustomerTransferMapper">
+<sql id="wheresql">
+<where>
+		 <if test="keyWord!=null and keyWord!=''" >
+		 	and o.transReason like concat('%',#{keyWord},'%') 
+		 </if>
+		
+	</where>
+	</sql>
+<resultMap type="CustomerTransfer" id="customerTransferMap">
+	<id property="id" column="id"/>
+	
+	<result property="transReason" column="transReason" />
+	<result property="transTime" column="transTime" />
+	
+	<association property="customer" column="customer_id" javaType="Customer">
+		<id property="id" column="cid"/>
+		<result property="name" column="cname" />
+	</association>
+	<association property="transUser" column="transUser_id" javaType="Employee">
+		<id property="id" column="eid"/>
+		<result property="realName" column="erealName" />
+	</association>
+	<association property="oldSeller" column="oldSeller_id" javaType="Employee">
+		<id property="id" column="eeid"/>
+		<result property="realName" column="eerealName" />
+	</association>
+	<association property="newSeller" column="newSeller_id" javaType="Employee">
+		<id property="id" column="eeeid"/>
+		<result property="realName" column="eeerealName" />
+	</association>
+	
+</resultMap>
+	<select id="getAll" resultType="CustomerTransfer">
+		select id from t_customerTransfer 
+	</select>
+	
+
+	
+	<select id="save" parameterType="CustomerTransfer">
+		insert into t_customerTransfer(
+		transReason,transTime,customer_id,transUser_id
+		,oldSeller_id,newSeller_id
+		) values(
+			#{transReason},#{transTime},#{customer.id},#{transUser.id}
+			,#{oldSeller.id},#{newSeller.id}
+		)
+	
+	</select>
+	
+	<select id="update" parameterType="CustomerTransfer">
+		update t_customerTransfer set transReason=#{transReason},transTime=#{transTime},
+		customer_id=#{customer.id},transUser_id=#{transUser.id},oldSeller_id=#{oldSeller.id},
+		newSeller_id=#{newSeller.id}
+		where id=#{id}
+	</select>
+	<select id="delete" parameterType="long">
+		delete from t_customerTransfer where id=#{id} 
+	</select>
+	<select id="getTotal" parameterType="CustomerTransferQuery" resultType="int">
+		select count(*) from t_customerTransfer o 	
+		<include refid="wheresql"/>
+	</select>
+	<select id="getRows" resultMap="customerTransferMap" parameterType="CustomerTransferQuery">
+		select o.*, c.id cid,c.`name` cname,e.id eid,e.realName erealName,
+		ee.id eeid,ee.realName eerealName,eee.id eeeid,eee.realName eeerealName 
+		from t_customertransfer o
+		LEFT JOIN t_customer c on c.id=o.customer_id
+		LEFT JOIN t_employee e on e.id=o.transUser_id
+		LEFT JOIN t_employee ee on ee.id=o.oldSeller_id
+		LEFT JOIN t_employee eee on eee.id=o.newSeller_id
+		<include refid="wheresql"/>
+		order by ${sort} ${order}
+		limit #{begin},#{end}
+	</select>
+	
+</mapper>

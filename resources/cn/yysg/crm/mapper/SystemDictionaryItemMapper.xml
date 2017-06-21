@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.SystemDictionaryItemMapper">
+
+	<!-- 保存 -->
+	<insert id="save" parameterType="SystemDictionaryItem" useGeneratedKeys="true" keyProperty="id">
+		insert into t_system_dictionary_item (name,intro,sequence,parent_id) values(#{name},#{intro},#{sequence},#{parent.id})
+	</insert>
+
+	<!-- 修改 -->
+	<update id="update" parameterType="SystemDictionaryItem">
+		update t_system_dictionary_item set parent_id=#{parent.id},name=#{name},intro=#{intro},sequence=#{sequence}
+		where id=#{id}
+	</update>
+
+	<!-- 删除 -->
+	<delete id="delete" parameterType="long">
+		delete from t_system_dictionary_item
+		where
+		id=#{id}
+	</delete>
+
+	<!-- 通过id获取 -->
+	<select id="get" resultType="SystemDictionaryItem" parameterType="long">
+		select * from t_system_dictionary_item where id=#{id}
+	</select>
+
+	<!-- 获取所有 -->
+	<select id="getAll" resultType="SystemDictionaryItem">
+		select * from t_system_dictionary_item
+	</select>
+	
+	<sql id="whereSql">
+		<where>
+			<if test="keyWord!=null and keyWord!=''">
+				and (e.intro like concat('%',#{keyWord},'%') or e.name like concat('%',#{keyWord},'%'))
+			</if>
+			<if test="parentId!=null">
+				and e.parent_id = #{parentId}
+			</if>
+		</where>
+	</sql>
+	
+	<!-- 按条件查询对象 总数-->
+	<select id="getTotal" resultType="int" parameterType="BaseQuery">
+		select count(id) from t_system_dictionary_item e 
+		<include refid="whereSql"/>
+	</select>
+	
+	<!-- 查询结果映射 -->
+	<resultMap type="SystemDictionaryItem" id="SystemDictionaryItemMap">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="intro" column="intro" />
+		<result property="sequence" column="sequence" />
+		<association property="parent" column="parent_id" javaType="SystemDictionary">
+			<id property="id" column="parent_id"/>
+			<result property="name" column="dname"/>
+		</association>
+	</resultMap>
+	
+	<!-- 按条件查询对象 记录-->
+	<select id="getRows" resultMap="SystemDictionaryItemMap" parameterType="BaseQuery">
+		select e.*,d.name dname from t_system_dictionary_item e 
+		LEFT JOIN t_system_dictionary d on d.id = e.parent_id 
+		<include refid="whereSql"/> 
+		limit #{begin},#{end}
+	</select>
+</mapper>

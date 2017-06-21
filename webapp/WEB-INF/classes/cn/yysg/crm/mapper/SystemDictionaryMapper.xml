@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.SystemDictionaryMapper">
+
+	<!-- 保存 -->
+	<insert id="save" parameterType="SystemDictionary" useGeneratedKeys="true" keyProperty="id">
+		insert into t_system_dictionary (sn,name,intro,state) values(#{sn},#{name},#{intro},#{state})
+	</insert>
+
+	<!-- 修改 -->
+	<update id="update" parameterType="SystemDictionary">
+		update t_system_dictionary set sn=#{sn},name=#{name},intro=#{intro},state=#{state}
+		where id=#{id}
+	</update>
+
+	<!-- 删除 -->
+	<delete id="delete" parameterType="long">
+		delete from t_system_dictionary
+		where
+		id=#{id}
+	</delete>
+
+	<!-- 通过id获取 -->
+	<select id="get" resultType="SystemDictionary" parameterType="long">
+		select * from t_system_dictionary where id=#{id}
+	</select>
+
+	<!-- 获取所有 -->
+	<select id="getAll" resultType="SystemDictionary">
+		select * from t_system_dictionary
+	</select>
+	
+	<sql id="whereSql">
+		<where>
+			<if test="keyWord!=null and keyWord!=''">
+				and (e.sn like concat('%',#{keyWord},'%') or e.name like concat('%',#{keyWord},'%'))
+			</if>
+			<if test="state!=null and state!=-2">
+				and e.state = #{state}
+			</if>
+		</where>
+	</sql>
+	
+	<!-- 按条件查询对象 总数-->
+	<select id="getTotal" resultType="int" parameterType="BaseQuery">
+		select count(id) from t_system_dictionary e
+		<include refid="whereSql"/>
+	</select>
+	
+	<!-- 查询结果映射 -->
+	<resultMap type="SystemDictionary" id="SystemDictionaryMap">
+		<id property="id" column="id" />
+		<result property="sn" column="sn" />
+		<result property="name" column="name" />
+		<result property="intro" column="intro" />
+		<result property="state" column="state" />
+	</resultMap>
+	
+	<!-- 按条件查询对象 记录-->
+	<select id="getRows" resultMap="SystemDictionaryMap" parameterType="BaseQuery">
+		select e.* from t_system_dictionary e 
+		<include refid="whereSql"/> 
+		limit #{begin},#{end}
+	</select>
+</mapper>

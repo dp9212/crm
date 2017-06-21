@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.CustomerDevPlanMapper">
+
+	<!-- 保存 -->
+	<insert id="save" parameterType="CustomerDevPlan" useGeneratedKeys="true"
+		keyProperty="id">
+		insert into customerDevPlan
+		(planTime,planSubject,planDetails,planType,inputUser,inputTime)
+		values(#{planTime},#{planSubject},#{planDetails},#{planType},#{inputUser},#{inputTime})
+	</insert>
+
+	<!-- 修改 -->
+	<update id="update" parameterType="CustomerDevPlan">
+		update customerDevPlan set
+		planTime=#{planTime},planSubject=#{planSubject},planDetails=#{planDetails},planType=#{planType},inputUser=#{inputUser}
+		where id=#{id}
+	</update>
+
+	<!-- 删除 -->
+	<delete id="delete" parameterType="long">
+		delete from customerDevPlan
+		where
+		id=#{id}
+	</delete>
+
+	<!-- 通过id获取 -->
+	<select id="get" resultType="CustomerDevPlan" parameterType="long">
+		select
+		planTime,planSubject,planDetails,planType,inputUser,inputTime where
+		id=#{id}
+	</select>
+
+	<!-- 通过所有 -->
+	<select id="getAll" resultType="CustomerDevPlan">
+		select
+		id,planTime,planSubject,planType,inputUser,inputTime from customerDevPlan
+	</select>
+</mapper>

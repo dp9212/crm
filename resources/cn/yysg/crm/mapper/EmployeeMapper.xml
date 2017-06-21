@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.EmployeeMapper">
+					
+	<resultMap type="Employee" id="EmployeeMap">
+		<id column="id" property="id" />
+		<result column="username" property="username" />
+		<result column="realName" property="realName" />
+		<result column="password" property="password" />
+		<result column="tel" property="tel" />
+		<result column="email" property="email" />
+		<result column="inputTime" property="inputTime" />
+		<result column="state" property="state" />
+		<!-- collection:集合 association:一对多，多对一 -->
+		<association column="department_id" property="department" javaType="Department">
+			<id column="department_id" property="id" />
+			<result column="name" property="name" />
+		</association>
+	</resultMap>
+	
+	<!-- 登录 -->
+	<select id="findByUserName" parameterType="String" resultType="Employee">
+		select * from t_employee o where o.username=#{username}
+	</select>
+	
+	<!-- 获取当前用户的权限 -->
+	<select id="findUserPermissions" parameterType="long" resultType="string" >
+		select p.resource from t_employee et 
+		LEFT JOIN t_employee_role er on er.employee_id=et.id 
+		LEFT JOIN t_role r on r.id=er.role_id 
+		LEFT JOIN t_role_permission rp on rp.role_id=r.id 
+		LEFT JOIN t_permission p on p.id=rp.permission_id 
+		where et.id =#{id};
+	</select>
+	<!-- 通过权限id判断用户的权限数量 -->
+	<select id="findPermissionTotal" parameterType="map" resultType="int" >
+		select count(*) from t_employee et 
+		LEFT JOIN t_employee_role er on er.employee_id=et.id 
+		LEFT JOIN t_role r on r.id=er.role_id 
+		LEFT JOIN t_role_permission rp on rp.role_id=r.id 
+		WHERE et.id=#{employeeId} and rp.permission_id=#{permissionId}
+	</select>
+	
+	<!-- 离职 -->
+	<update id="leave" parameterType="long">
+		<!-- state = 0;// 状态:0:正常(默认),-1:停用 -->
+		update t_employee set state=-1 where id=#{id}
+	</update>
+	
+	<!-- 保存 -->
+	<insert id="save" parameterType="Employee" useGeneratedKeys="true" keyProperty="id">
+		insert into t_employee (username,realName,password,tel,email,inputTime,state,department_id) values(#{username},#{realName},#{password},#{tel},#{email},#{inputTime},#{state},#{department.id})
+	</insert>
+
+	<!-- 修改 -->
+	<update id="update" parameterType="Employee">
+		update t_employee set username=#{username},realName=#{realName},password=#{password},tel=#{tel},email=#{email},inputTime=#{inputTime},state=#{state},department_id=#{department.id}
+		where id=#{id}
+	</update>
+
+	<!-- 删除 -->
+	<delete id="delete" parameterType="long">
+		delete from t_employee
+		where
+		id=#{id}
+	</delete>
+
+	<!-- 通过id获取 -->
+	<select id="get" resultType="Employee" parameterType="long">
+		select id,username,realName,password,tel,email,inputTime,state,department_id from t_employee where id=#{id}
+	</select>
+
+	<!-- 通过所有 -->
+	<select id="getAll" resultType="Employee">
+		select id,username,realName,password,tel,email,inputTime,state,department_id from t_employee
+	</select>
+	
+	<sql id="whereSql" >
+		<where>
+			<if test=" keyWord!=null and keyWord!='' " >
+				<if test=" dbSearcher=='o.username' ">
+					and o.username like concat('%',#{keyWord},'%') 
+				</if>
+				<if test=" dbSearcher=='o.tel' ">
+					and o.tel like concat('%',#{keyWord},'%') 
+				</if>
+				<if test=" dbSearcher=='o.realName' ">
+					and o.realName like concat('%',#{keyWord},'%') 
+				</if>
+				<if test="dbSearcher=='all'">
+					and 1=1 
+				</if>
+			</if>
+			<!-- 高级查询部分 -->
+			<if test=" username!=null and username!='' ">
+				and o.username like concat('%',#{username},'%') 
+			</if>
+			<if test=" realName!=null and realName!='' ">
+				and o.realName like concat('%',#{realName},'%') 
+			</if>
+			<if test=" tel!=null and tel!='' ">
+				and o.tel like concat('%',#{tel},'%') 
+			</if>
+			<if test=" email!=null and email!='' ">
+				and o.email like concat('%',#{email},'%') 
+			</if>
+			<if test=" state!=null">
+				and o.state=#{state} 
+			</if>
+			<if test=" departmentId!=null ">
+				and o.department_id=#{departmentId} 
+			</if>
+			<if test="id!=null" >
+			 	and o.id=#{id}
+			 </if>
+		</where>
+	</sql>
+	
+	<!-- 分页  总数据条数-->
+	<select id="getTotal" resultType="int" parameterType="EmployeeQuery" >
+		select count(*) from t_employee o <include refid="whereSql"/>
+	</select>
+	<!-- 分页数据 -->
+	<select id="getRows" resultMap="EmployeeMap" parameterType="EmployeeQuery" >
+		select o.*,d.name from t_employee o 
+		left join t_department d on o.department_id=d.id 
+		<include refid="whereSql"/> 
+		order by ${sort} ${order} 
+		limit #{begin},#{end}
+	</select>
+	
+		
+	<!-- 分页数据 -->
+	<!-- <select id="getRows" resultType="Employee" parameterType="EmployeeQuery" >
+		select * from t_employee 
+		<include refid="whereSql"/> 
+		limit #{begin},#{end}
+	</select> -->
+	
+</mapper>

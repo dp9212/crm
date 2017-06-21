@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yysg.crm.mapper.GuaranteeItemMapper">
+
+	<!-- 通过id获取保修单明细 -->
+	<select id="get" resultMap="guaranteeItemResultMap" parameterType="long">
+		select o.id,o.guaranteeTime,o.guaranteeContent,o.isSolve,o.guarantee_id
+		from t_guarantee_item o left join t_guarantee g on o.guarantee_id=g.id
+		where o.id=#{id}
+	</select>
+	
+	<!-- 根据明细所属的保修单来查询 -->
+	<select id="getGuaranteeItemById" resultMap="guaranteeItemResultMap" parameterType="long">
+		select o.*,g.id gid,g.sn gsn from t_guarantee_item o join t_guarantee g on o.guarantee_id=g.id
+		where g.id=#{id}
+	</select>
+	
+	<!-- 通过id来删除明细 -->
+	<delete id="deleteByContractId" parameterType="long">
+		delete from t_guarantee_item where guarantee_id = #{id};
+	</delete>
+
+	<!-- 获取所有的保修单明细信息 -->
+	<select id="getAll" resultType="GuaranteeItem">
+		select * from t_guarantee_item;
+	</select>
+
+	<!-- 保存保修单信息 -->
+	<insert id="save" parameterType="GuaranteeItem" keyProperty="id" useGeneratedKeys="true">
+		insert into t_guarantee_item
+		(guaranteeTime,guaranteeContent,isSolve,guarantee_id)
+		values
+		(#{guaranteeTime},#{guaranteeContent},#{isSolve},#{guarantee.id});
+	</insert>
+
+	<!-- 修改保修单明细 -->
+	<update id="update" parameterType="GuaranteeItem">
+		update t_guarantee_item set
+		guaranteeTime=#{guaranteeTime},guaranteeContent=#{guaranteeContent},
+		isSolve=#{isSolve},guarantee_id=#{guarantee.id}
+		where id=#{id}
+	</update>
+
+	<!-- 通过id删除保修单明细 -->
+	<delete id="delete" parameterType="long">
+		delete from t_guarantee_item where id =#{id};
+	</delete>
+	
+	<!-- 公共的查询条件 -->
+	<sql id="whereSql">
+		<where>
+			<if test="q!=null and q!=''">
+				and (o.sn like concat('%',#{q},'%')
+			</if>
+		</where>
+	</sql>
+
+	<!-- 根据条件查询count -->
+	<!-- int findCountByQuery(BaseQuery baseQuery); -->
+	<select id="getTotal" resultType="int" parameterType="GuaranteeItemQuery">
+		select count(o.id) from t_guarantee_item o
+		<include refid="whereSql" />
+	</select>
+
+	<!-- 根据条件查询limit -->
+	<!-- List<T> findLimitByQuery(BaseQuery baseQuery); -->
+	<!-- limit #{begin},#{end} 从BaseQuery获取的 -->
+	<select id="getRows" resultMap="guaranteeItemResultMap"
+		parameterType="GuaranteeItemQuery">
+		select o.*,g.id gid,g.sn gsn
+		from t_guarantee_item o left join t_guarantee g on o.guarantee_id=g.id
+		<include refid="whereSql" />
+		limit
+		#{begin},#{end}
+	</select>
+
+	<resultMap type="GuaranteeItem" id="guaranteeItemResultMap">
+		<!-- 订单自己的属性o.id,o.sn,o.signTime,o.sum,o.intro -->
+		<id property="id" column="id" />
+		<result property="guaranteeTime" column="guaranteeTime" />
+		<result property="guaranteeContent" column="guaranteeContent" />
+		<result property="isSolve" column="isSolve" />
+		<!-- 关键对象：多对一，订单 -->
+		<!-- c.id cid,c.name cname JOIN t_customer c on c.id=o.customer_id -->
+		<association property="guarantee" column="guarantee_id" javaType="Guarantee">
+			<id property="id" column="gid" />
+			<result property="sn" column="gsn" />
+		</association>
+	</resultMap>
+
+</mapper> 
